@@ -1,24 +1,46 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 
 public class Plane
 {
-    private Coords _A;
-    private Coords _v;
-    private Coords _u;
+    public Coords A;
+    Coords B;
+    Coords C;
+    Coords v;
+    Coords u;
 
-    public Plane(Coords startPoint, Coords pointB, Coords pointC)
+    public Coords V
     {
-        _A = startPoint;
-        _v = pointB - startPoint;
-        _u = pointC - startPoint;
+        get { return v; }
     }
 
-
-
-    public  Coords Lerp(float s, float t)
+    public Coords U
     {
-        float xst = _A.X + _v.X * s + _u.X * t;
-        float yst = _A.Y + _v.Y * s + _u.Y * t;
-        float zst = _A.Z + _v.Z * s + _u.Z * t;
+        get { return u; }
+    }
+
+    public Plane(Coords _A, Coords _B, Coords _C)
+    {
+        A = _A;
+        B = _B;
+        C = _C;
+        v = B - A;
+        u = C - A;
+    }
+
+    public Plane(Coords _A, Vector3 V, Vector3 U)
+    {
+        A = _A;
+        v = new Coords(V.x, V.y, V.z);
+        u = new Coords(U.x, U.y, U.z);
+    }
+
+    public Coords Lerp(float s, float t)
+    {
+        float xst = A.x + v.x * s + u.x * t;
+        float yst = A.y + v.y * s + u.y * t;
+        float zst = A.z + v.z * s + u.z * t;
 
         return new Coords(xst, yst, zst);
     }

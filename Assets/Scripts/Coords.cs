@@ -1,90 +1,85 @@
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Coords
 {
-    private float _x;
-    private float _y;
-    private float _z;
 
-    public Coords(float x, float y, float z = -1)
+    public float x;
+    public float y;
+    public float z;
+
+    public Coords(float _X, float _Y)
     {
-        _x = x;
-        _y = y;
-        _z = z;
+        x = _X;
+        y = _Y;
+        z = -1;
     }
 
-    public Coords(Vector3 coords)
+    public Coords(float _X, float _Y, float _Z)
     {
-        _x = coords.x;
-        _y = coords.y;
-        _z = coords.z;
+        x = _X;
+        y = _Y;
+        z = _Z;
     }
 
-    public float X
-    { get { return _x; } }
-    public float Y
-    { get { return _y; } }
-    public float Z
-    { get { return _z; } }
+    public Coords(Vector3 vecpos)
+    {
+        x = vecpos.x;
+        y = vecpos.y;
+        z = vecpos.z;
+    }
 
     public override string ToString()
     {
-        return $"({_x},{_y},{_z})";
+        return "(" + x + "," + y + "," + z + ")";
     }
 
     public Vector3 ToVector()
     {
-        return new Vector3(_x, _y, _z);
+        return new Vector3(x, y, z);
     }
+
+    static public Coords operator +(Coords a, Coords b)
+    {
+        return new Coords(a.x + b.x, a.y + b.y, a.z + b.z);
+    }
+
+    static public Coords operator -(Coords a, Coords b)
+    {
+        return new Coords(a.x - b.x, a.y - b.y, a.z - b.z);
+    }
+
+    static public void DrawLine(Coords startPoint, Coords endPoint, float width, Color colour)
+    {
+        GameObject line = new GameObject("Line_" + startPoint.ToString() + "_" + endPoint.ToString());
+        LineRenderer lineRenderer = line.AddComponent<LineRenderer>();
+        lineRenderer.material = new Material(Shader.Find("Unlit/Color"));
+        lineRenderer.material.color = colour;
+        lineRenderer.positionCount = 2;
+        lineRenderer.SetPosition(0, new Vector3(startPoint.x, startPoint.y, startPoint.z));
+        lineRenderer.SetPosition(1, new Vector3(endPoint.x, endPoint.y, endPoint.z));
+        lineRenderer.startWidth = width;
+        lineRenderer.endWidth = width;
+    }
+
 
     static public Coords Perp(Coords v)
     {
-        return new Coords(-v.Y, v.X, v.Z);
+        return new Coords(-v.y, v.x);
     }
 
-    static public void DrawPoint(Coords position, float width, Color color)
+    static public void DrawPoint(Coords position, float width, Color colour)
     {
-        GameObject point = new GameObject("Point_" + position.ToString());
-        LineRenderer lineRenderer = ConfigureLineRenderer(point, width, color);
-
-        lineRenderer.SetPosition(0, new Vector3(position._x + width / 3f, position._y + width / 3f, position._z));
-        lineRenderer.SetPosition(1, new Vector3(position._x - width / 3f, position._y - width / 3f, position._z));
-    }
-
-    static public void DrawLine(Coords startPosition, Coords endPosition, float width, Color color)
-    {
-        GameObject line = new GameObject("Line_" + startPosition.ToString() + '_' + endPosition.ToString());
-        LineRenderer lineRenderer = ConfigureLineRenderer(line, width, color);
-
-        lineRenderer.SetPosition(0, new Vector3(startPosition._x, startPosition._y, startPosition._z));
-        lineRenderer.SetPosition(1, new Vector3(endPosition._x, endPosition._y, endPosition._z));
-    }
-
-    static private LineRenderer ConfigureLineRenderer(GameObject line, float width, Color color)
-    {
+        GameObject line = new GameObject("Point_" + position.ToString());
         LineRenderer lineRenderer = line.AddComponent<LineRenderer>();
-
         lineRenderer.material = new Material(Shader.Find("Unlit/Color"));
-        lineRenderer.material.color = color;
+        lineRenderer.material.color = colour;
         lineRenderer.positionCount = 2;
+        lineRenderer.SetPosition(0, new Vector3(position.x - width / 3.0f, position.y - width / 3.0f, position.z));
+        lineRenderer.SetPosition(1, new Vector3(position.x + width / 3.0f, position.y + width / 3.0f, position.z));
         lineRenderer.startWidth = width;
         lineRenderer.endWidth = width;
-
-        return lineRenderer;
     }
 
-    static public Coords operator +(Coords first, Coords second)
-    {
-        return new Coords(first.X + second.X, first.Y + second.Y, first.Z + second.Z);
-    }
-
-    static public float operator *(Coords first, Coords second)
-    {
-        return (first.X * second.X) + (first.Y * second.Y) + (first.Z * second.Z);
-    }
-
-    static public Coords operator -(Coords first, Coords second)
-    {
-        return new Coords(first.X - second.X, first.Y - second.Y, first.Z - second.Z);
-    }
 }
