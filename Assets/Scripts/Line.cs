@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Line
 {
-    Coords A, B, v;
+    public Coords A, B, v;
 
     public enum LINETYPE
     {
@@ -31,6 +31,14 @@ public class Line
         type = LINETYPE.SEGMENT;
     }
 
+
+    public Coords Reflect(Coords normal)
+    {
+        Coords normalV = v.Normal();
+        Coords norm = normal.Normal();
+
+        return normalV - (2 * (HolisticMath.Dot(normalV, norm)) * norm);
+    }
 
     public float IntersectsAt(Line l)
     {

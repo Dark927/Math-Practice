@@ -13,7 +13,7 @@ public class Coords
     {
         x = _X;
         y = _Y;
-        z = -1;
+        z = 0;
     }
 
     public Coords(float _X, float _Y, float _Z)
@@ -40,6 +40,12 @@ public class Coords
         return new Vector3(x, y, z);
     }
 
+    public Coords Normal()
+    {
+        float magnitude = HolisticMath.Distance(new Coords(0, 0, 0), new Coords(x, y, z));
+        return new Coords(x / magnitude, y / magnitude, z / magnitude);
+    }
+
     static public Coords operator +(Coords a, Coords b)
     {
         return new Coords(a.x + b.x, a.y + b.y, a.z + b.z);
@@ -48,6 +54,21 @@ public class Coords
     static public Coords operator -(Coords a, Coords b)
     {
         return new Coords(a.x - b.x, a.y - b.y, a.z - b.z);
+    }
+
+    static public Coords operator *(Coords a, float b)
+    {
+        return new Coords(a.x * b, a.y * b, a.z * b);
+    }
+
+    static public Coords operator *(float b, Coords a)
+    {
+        return new Coords(a.x * b, a.y * b, a.z * b);
+    }
+
+    static public Coords operator /(Coords a, float b)
+    {
+        return new Coords(a.x / b, a.y / b, a.z / b);
     }
 
     static public void DrawLine(Coords startPoint, Coords endPoint, float width, Color colour)

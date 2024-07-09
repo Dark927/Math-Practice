@@ -36,12 +36,7 @@ public class HolisticMath
 
     static public Coords GetNormal(Coords vector)
     {
-        float length = Distance(new Coords(0, 0, 0), vector);
-        vector.x /= length;
-        vector.y /= length;
-        vector.z /= length;
-
-        return vector;
+        return vector.Normal();
     }
 
     static public float Dot(Coords vector1, Coords vector2)
