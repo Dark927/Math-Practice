@@ -1,101 +1,69 @@
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Line
 {
-    public enum LineType
-    { line, lineSegment, ray }
+    public Coords A;
+    Coords B;
+    public Coords v;
 
+    public enum LINETYPE { LINE, SEGMENT, RAY};
+    LINETYPE type;
 
-    private Coords _A;
-    private Coords _B;
-    private Coords _v;
-
-    private LineType _type;
-
-    public Line(Coords A, Coords B, LineType type)
+    public Line(Coords _A, Coords _B, LINETYPE _type)
     {
-        _A = A;
-        _B = B;
-        _v = B - A;
-        _type = type;
+        A = _A;
+        B = _B;
+        type = _type;
+        v = new Coords(B.x - A.x, B.y - A.y, B.z - A.z);
     }
 
-    public Line(Coords A, Vector3 direction, LineType type)
+    public Line(Coords _A, Coords _V)
     {
-        _A = A;
-        _v = new Coords(direction);
-        _B = A + _v;
-        _type = type;
+        A = _A;
+        v = _V;
+        B = _A + v;
+        type = LINETYPE.SEGMENT;
     }
 
-    public Coords A
+
+    public float IntersectsAt(Line l)
     {
-        get { return _A; }
+        if(HolisticMath.Dot(Coords.Perp(l.v),v) == 0)
+        {
+            return float.NaN;
+        }
+        Coords c = l.A - this.A;
+        float t = HolisticMath.Dot(Coords.Perp(l.v), c) / HolisticMath.Dot(Coords.Perp(l.v), v);
+        if((t < 0 || t > 1) && type == LINETYPE.SEGMENT)
+        {
+            return float.NaN;
+        }
+        return t;
     }
 
-    public Coords V
+    public void Draw(float width, Color col)
     {
-        get { return _v; }
+        Coords.DrawLine(A, B, width, col);
     }
-
 
     public Coords Lerp(float t)
     {
-        t = Clamp(t, _type);
+        if (type == LINETYPE.SEGMENT)
+            t = Mathf.Clamp(t, 0, 1);
+        else if (type == LINETYPE.RAY && t < 0)
+            t = 0;
 
-        return new Coords(_A.X + _v.X * t, _A.Y + _v.Y * t, _A.Z);
+        float xt = A.x + v.x * t;
+        float yt = A.y + v.y * t;
+        float zt = A.z + v.z * t;
+
+        return new Coords(xt, yt, zt);
     }
 
+    //3D Line Intersection Algorithm
+    //http://inis.jinr.ru/sl/vol1/CMC/Graphics_Gems_1,ed_A.Glassner.pdf
 
-    static public Coords Lerp(Coords A, Coords B, float t, LineType type)
-    {
-        t = Clamp(t, type);
 
-        Coords v = B - A;
-        return new Coords(A.X + v.X * t, B.Y + v.Y * t);
-    }
-
-    private static float Clamp(float t, LineType type)
-    {
-        float clampedT = t;
-
-        if (type == LineType.lineSegment)
-        {
-            clampedT = Mathf.Clamp(t, 0, 1);
-        }
-        else if (type == LineType.ray && t < 0)
-        {
-            clampedT = 0;
-        }
-
-        return clampedT;
-    }
-
-    public void Draw(float width, Color color)
-    {
-        Coords.DrawLine(_A, _B, width, color);
-    }
-
-    public float IntersectAt(Line line)
-    {
-        Coords perpV = Coords.Perp(line.V);
-        float t;
-
-        if (!Mathf.Approximately(perpV * _v, 0))
-        {
-            Coords c = line.A - _A;
-            t = (perpV * c) / (perpV * _v);
-            
-            if((_type == LineType.lineSegment) && ((t > 1) || t < 0))
-            {
-                t = float.NaN;
-            }
-        }
-        else
-        {
-            t = float.NaN;
-        }
-
-        return t;
-    }
 }
