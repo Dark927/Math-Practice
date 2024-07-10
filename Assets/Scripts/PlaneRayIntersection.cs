@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class PlaneRayIntersection : MonoBehaviour
@@ -5,12 +6,33 @@ public class PlaneRayIntersection : MonoBehaviour
     [SerializeField] private GameObject _sheep;
     [SerializeField] private Vector3 _offset = new Vector3(0, 0.3f, 0);
 
-    [SerializeField] private Vector2 _boundsX = new Vector3(-7f, 7f);
-    [SerializeField] private Vector2 _boundsZ = new Vector3(-7f, 7f);
+    [SerializeField] List<Transform> _borderList;
+    List<Vector3> _normalsList;
 
     Plane _plane;
 
     private void Start()
+    {
+        CreatePlane();
+        _normalsList = GetBordersNormals();
+    }
+
+    private List<Vector3> GetBordersNormals()
+    {
+        List<Vector3> normalsList = new List<Vector3>();
+
+        foreach (Transform border in _borderList)
+        {
+            Vector3 normal = border.gameObject.GetComponent<MeshFilter>().mesh.normals[0];
+            normal = border.TransformVector(normal);
+
+            normalsList.Add(normal);
+        }
+
+        return normalsList;
+    }
+
+    private void CreatePlane()
     {
         Vector3[] vertices = GetComponent<MeshFilter>().mesh.vertices;
 
@@ -30,20 +52,31 @@ public class PlaneRayIntersection : MonoBehaviour
         if (Input.GetMouseButton(0))
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            float t = 0f;
 
-            if (_plane.Raycast(ray, out t))
+            if (_plane.Raycast(ray, out float t))
             {
                 Vector3 intersectionPoint = ray.GetPoint(t);
+                bool insideBorders = IsInsideBorders(intersectionPoint);
 
-                bool outOfBoundsX = (intersectionPoint.x < _boundsX.x) || (_boundsX.y < intersectionPoint.x);
-                bool outOfBoundsZ = (intersectionPoint.z < _boundsZ.x) || (_boundsZ.y < intersectionPoint.z);
 
-                if (!(outOfBoundsX || outOfBoundsZ))
+                if (insideBorders)
                 {
                     _sheep.transform.position = intersectionPoint;
                 }
             }
         }
+    }
+
+    private bool IsInsideBorders(Vector3 intersectionPoint)
+    {
+        bool insideBorders = true;
+
+        for (int borderIndex = 0; borderIndex < _borderList.Count; ++borderIndex)
+        {
+            Vector3 hitPointToBorder = _borderList[borderIndex].position - intersectionPoint;
+            insideBorders = insideBorders && Vector3.Dot(hitPointToBorder, _normalsList[borderIndex]) <= 0;
+        }
+
+        return insideBorders;
     }
 }
