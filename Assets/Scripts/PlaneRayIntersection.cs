@@ -4,15 +4,16 @@ public class PlaneRayIntersection : MonoBehaviour
 {
     [SerializeField] private GameObject _sphere;
 
-    [SerializeField] private Transform _corner_1;
-    [SerializeField] private Transform _corner_2;
-    [SerializeField] private Transform _corner_3;
-
     Plane _plane;
 
     private void Start()
     {
-        _plane = new Plane(_corner_1.position, _corner_2.position, _corner_3.position);
+        Vector3[] vertices = GetComponent<MeshFilter>().mesh.vertices;
+
+        _plane = new Plane(
+            transform.TransformPoint(vertices[0]),
+            transform.TransformPoint(vertices[1]),
+            transform.TransformPoint(vertices[2]));
     }
 
     private void Update()
