@@ -7,18 +7,8 @@ public class Plane
     public Coords A;
     Coords B;
     Coords C;
-    Coords v;
-    Coords u;
-
-    public Coords V
-    {
-        get { return v; }
-    }
-
-    public Coords U
-    {
-        get { return u; }
-    }
+    public Coords v;
+    public Coords u;
 
     public Plane(Coords _A, Coords _B, Coords _C)
     {
@@ -44,4 +34,6 @@ public class Plane
 
         return new Coords(xst, yst, zst);
     }
+   
+
 }
