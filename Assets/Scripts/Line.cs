@@ -37,6 +37,8 @@ public class Line
         Coords normalV = v.Normal();
         Coords norm = normal.Normal();
 
+        if (HolisticMath.Dot(normal, v) == 0) return v;
+
         return normalV - (2 * (HolisticMath.Dot(normalV, norm)) * norm);
     }
 

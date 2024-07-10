@@ -13,7 +13,7 @@ public class Coords
     {
         x = _X;
         y = _Y;
-        z = 0;
+        z = -1;
     }
 
     public Coords(float _X, float _Y, float _Z)
@@ -87,7 +87,7 @@ public class Coords
 
     static public Coords Perp(Coords v)
     {
-        return new Coords(-v.y, v.x);
+        return new Coords(-v.y, v.x, 0);
     }
 
     static public void DrawPoint(Coords position, float width, Color colour)

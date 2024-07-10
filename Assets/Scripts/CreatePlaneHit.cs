@@ -7,6 +7,7 @@ public class CreatePlaneHit : MonoBehaviour
     [SerializeField] private Transform _C;
     [SerializeField] private Transform _D;
     [SerializeField] private Transform _E;
+    [SerializeField] private GameObject _ball;
 
     [Space]
 
@@ -15,6 +16,9 @@ public class CreatePlaneHit : MonoBehaviour
 
     private Plane _plane;
     private Line _line;
+    private Line _trajectory;
+
+
 
     private void Start()
     {
@@ -24,6 +28,22 @@ public class CreatePlaneHit : MonoBehaviour
         DisplayIntersection();
     }
 
+    private void Update()
+    {
+        float t = Time.time;
+
+        if (t <= 1)
+        {
+            _ball.transform.position = _trajectory.Lerp(t).ToVector();
+        }
+        else
+        {
+            Coords normal = HolisticMath.Cross(new Coords(_B.position - _A.position), new Coords(_C.position - _A.position));
+            _ball.transform.position += _trajectory.Reflect(normal).ToVector() * Time.deltaTime * 16f;
+        }
+    }
+
+
     private void DisplayIntersection()
     {
         float intersectionT = _line.IntersectsAt(_plane);
@@ -32,15 +52,16 @@ public class CreatePlaneHit : MonoBehaviour
         {
             GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cube.GetComponent<MeshRenderer>().material.color = Color.yellow;
-            cube.transform.localScale *= 1.5f;
             cube.transform.position = _line.Lerp(intersectionT).ToVector();
+
+            _trajectory = new Line(_line.A, _line.Lerp(intersectionT), Line.LINETYPE.SEGMENT);
         }
     }
 
     private void CreateLine()
     {
         _line = new Line(new Coords(_D.position), new Coords(_E.position), Line.LINETYPE.RAY);
-        _line.Draw(1f, Color.green);
+        _line.Draw(0.5f, Color.green);
     }
 
     private void CreatePlane()
