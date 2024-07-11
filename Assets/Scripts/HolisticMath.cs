@@ -32,6 +32,22 @@ public class HolisticMath
         return (movingMatrix * positionMatrix).AsCoords();
     }
 
+    static public Coords Scale(Coords position, float scaleX, float scaleY, float scaleZ)
+    {
+        float[] scaleMatrixValues =
+            {
+            scaleX, 0, 0, 0,
+            0, scaleY, 0, 0,
+            0, 0, scaleZ, 0,
+            0, 0, 0, 1
+        };
+
+        Matrix scaleMatrix = new Matrix(scaleMatrixValues, 4, 4);
+        Matrix positionMatrix = new Matrix(position.AsFloats(), 4, 1);
+
+        return (scaleMatrix * positionMatrix).AsCoords();
+    }
+
     static public float Distance(Coords point1, Coords point2)
     {
         float diffSquared = Square(point1.x - point2.x) + 
