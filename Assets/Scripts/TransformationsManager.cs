@@ -10,11 +10,26 @@ public class TransformationsManager : MonoBehaviour
     [SerializeField] private Vector3 _shear;
     [SerializeField] private GameObject _center;
 
+    [SerializeField] private Vector3 _axis;
+    [SerializeField] private float _angle;
+
+    [Space]
+    [SerializeField] private Color _pointsColor;
+
     private void Start()
     {
         Transformations();
 
+        ChangePointColor(_pointsColor);
         DrawHouse();
+    }
+
+    private void ChangePointColor(Color color)
+    {
+        foreach (GameObject point in _points)
+        {
+            point.GetComponent<MeshRenderer>().material.color = color;
+        }
     }
 
     private void DrawHouse()
@@ -24,7 +39,7 @@ public class TransformationsManager : MonoBehaviour
 
         foreach (Line line in lineList)
         {
-            line.Draw(0.1f, Color.yellow);
+            line.Draw(0.05f, Color.yellow);
         }
     }
 
@@ -60,10 +75,13 @@ public class TransformationsManager : MonoBehaviour
         {
             Coords position = new Coords(point.transform.position, 1);
 
-
             //position = HolisticMath.Translate(position, new Coords(-centerPosition.x, -centerPosition.y, -centerPosition.z, 0));
             //position = HolisticMath.Rotate(position, _rotation.x, true, _rotation.y, false, _rotation.z, true);
-            point.transform.position = HolisticMath.Shear(position, _shear.x, _shear.y, _shear.z).ToVector();
+
+            Coords axis = new Coords(_axis);
+            Coords.DrawLine(new Coords(0, 0, 0), axis * 3, 0.1f, Color.yellow);
+
+            point.transform.position = HolisticMath.QRotate(position, axis, _angle, true).ToVector();
         }
     }
 }

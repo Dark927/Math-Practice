@@ -24,6 +24,11 @@ public class Matrix
         _values = new float[_rows * _cols];
     }
 
+    public float GetValueAt(int row, int col)
+    {
+        return _values[row * _rows + col];
+    }
+
     public override string ToString()
     {
         string matrixStr = "";

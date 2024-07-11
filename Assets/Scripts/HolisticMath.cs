@@ -58,11 +58,11 @@ public class HolisticMath
             0, 0, 0, 1
         };
 
-        Matrix rollMatrixX = new Matrix(rollValuesX, 4, 4);        
-        
+        Matrix rollMatrixX = new Matrix(rollValuesX, 4, 4);
+
 
         // Y Roll
-        
+
         float[] rollValuesY =
             {
             Mathf.Cos(rotationY), 0, Mathf.Sin(rotationY), 0,
@@ -71,11 +71,11 @@ public class HolisticMath
             0, 0, 0, 1
         };
 
-        Matrix rollMatrixY = new Matrix(rollValuesY, 4, 4);        
-        
-        
+        Matrix rollMatrixY = new Matrix(rollValuesY, 4, 4);
+
+
         // Z Roll
-        
+
         float[] rollValuesZ =
             {
             Mathf.Cos(rotationZ), -Mathf.Sin(rotationZ), 0, 0,
@@ -90,6 +90,86 @@ public class HolisticMath
 
         return (rollMatrixX * rollMatrixY * rollMatrixZ * positionMatrix).AsCoords();
     }
+
+    static public Matrix GetRotationMatrix
+        (
+        float rotationX, bool clockX,
+        float rotationY, bool clockY,
+        float rotationZ, bool clockZ
+        )
+    {
+        // Check if angles must be clockwise and configure them
+
+        rotationX = !clockX ? rotationX : 2 * Mathf.PI - rotationX;
+        rotationY = !clockY ? rotationY : 2 * Mathf.PI - rotationY;
+        rotationZ = !clockZ ? rotationZ : 2 * Mathf.PI - rotationZ;
+
+        // X Roll
+
+        float[] rollValuesX =
+            {
+            1, 0, 0, 0,
+            0, Mathf.Cos(rotationX), -Mathf.Sin(rotationX), 0,
+            0, Mathf.Sin(rotationX), Mathf.Cos(rotationX), 0,
+            0, 0, 0, 1
+        };
+
+        Matrix rollMatrixX = new Matrix(rollValuesX, 4, 4);
+
+
+        // Y Roll
+
+        float[] rollValuesY =
+            {
+            Mathf.Cos(rotationY), 0, Mathf.Sin(rotationY), 0,
+            0, 1, 0, 0,
+            -Mathf.Sin(rotationY), 0, Mathf.Cos(rotationY), 0,
+            0, 0, 0, 1
+        };
+
+        Matrix rollMatrixY = new Matrix(rollValuesY, 4, 4);
+
+
+        // Z Roll
+
+        float[] rollValuesZ =
+            {
+            Mathf.Cos(rotationZ), -Mathf.Sin(rotationZ), 0, 0,
+            Mathf.Sin(rotationZ), Mathf.Cos(rotationZ), 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1
+        };
+
+        Matrix rollMatrixZ = new Matrix(rollValuesZ, 4, 4);
+
+        // Result
+
+        return (rollMatrixX * rollMatrixY * rollMatrixZ);
+    }
+
+    static public float GetRotationAngle(Matrix rotationMatrix)
+    {
+        float angle = MathF.Acos((1f / 2f) *
+            (rotationMatrix.GetValueAt(0, 0) +
+                rotationMatrix.GetValueAt(1, 1) +
+                    rotationMatrix.GetValueAt(2, 2) +
+                        rotationMatrix.GetValueAt(3, 3) - 2));
+
+
+        return angle;
+    }
+
+    static public Coords GetRotationAxis(Matrix rotationMatrix ,float angle)
+    {
+        float denominator = 2 * Mathf.Sin(angle);
+
+        float x = (rotationMatrix.GetValueAt(2,1) - rotationMatrix.GetValueAt(1,2)) / denominator;
+        float y = (rotationMatrix.GetValueAt(0,2) - rotationMatrix.GetValueAt(2,0)) / denominator;
+        float z = (rotationMatrix.GetValueAt(1,0) - rotationMatrix.GetValueAt(0,1)) / denominator;
+
+        return new Coords(x, y, z, 0);
+    }
+
 
     static public Coords Scale(Coords position, float scaleX, float scaleY, float scaleZ)
     {
@@ -121,6 +201,23 @@ public class HolisticMath
         Matrix positionMatrix = new Matrix(position.AsFloats(), 4, 1);
 
         return (shearMatrix * positionMatrix).AsCoords();
+    }
+
+
+    static public Coords ReflectX(Coords position)
+    {
+        float[] reflectMatrixValues =
+            {
+            -1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1
+        };
+
+        Matrix reflectMatrix = new Matrix(reflectMatrixValues, 4, 4);
+        Matrix positionMatrix = new Matrix(position.AsFloats(), 4, 1);
+
+        return (reflectMatrix * positionMatrix).AsCoords();
     }
 
     static public float Distance(Coords point1, Coords point2)
@@ -209,5 +306,40 @@ public class HolisticMath
         float zMult = vector1.x * vector2.y - vector1.y * vector2.x;
         Coords crossProd = new Coords(xMult, yMult, zMult);
         return crossProd;
+    }
+
+    static public Coords QRotate(Coords position, Coords axis, float angleDeg, bool displayDebugQ = false)
+    {
+        // Calculate quaternion
+
+        Vector3 axisNorm = axis.ToVector().normalized;
+
+        float w = Mathf.Cos((angleDeg * Mathf.Deg2Rad) / 2f);
+        float s = Mathf.Sin((angleDeg * Mathf.Deg2Rad) / 2f);
+
+        Vector3 qv = axisNorm * s;
+
+        Coords q = new Coords(qv, w);
+
+        if (displayDebugQ)
+        {
+            Debug.Log(q.x + " " + q.y + " " + q.z + " " + q.w);
+        }
+
+        // Calculate rotation matrix multiplication 
+
+        float[] rotationMatrixValues =
+        {
+            1-2*Mathf.Pow(q.y, 2) - 2 * Mathf.Pow(q.z,2),       2*q.x*q.y - 2 * q.w * q.z,                              2 * q.x * q.z + 2 * q.w * q.y,                  0,
+            2 * q.x * q.y + 2*q.w*q.z,                          1 - 2 * Mathf.Pow(q.x,2) - 2 * Mathf.Pow(q.z,2),        2 * q.y * q.z - 2 * q.w * q.x,                  0,
+            2*q.x*q.z - 2*q.w*q.y,                              2*q.y*q.z + 2 * q.w * q.x,                              1-2*Mathf.Pow(q.x,2) - 2 * Mathf.Pow(q.y,2),    0,
+            0,                                                  0,                                                      0,                                              1
+        };
+
+
+        Matrix rotationMatrix = new Matrix(rotationMatrixValues, 4, 4);
+        Matrix positionMatrix = new Matrix(position.AsFloats(), 4, 1);
+
+        return (rotationMatrix * positionMatrix).AsCoords();
     }
 }
