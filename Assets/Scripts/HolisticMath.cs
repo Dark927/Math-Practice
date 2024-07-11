@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,6 +13,23 @@ public class HolisticMath
         vector.z /= length;
 
         return vector;
+    }
+
+    static public Coords Translate(Coords position, Coords vector)
+    {
+        Matrix positionMatrix = new Matrix(position.AsFloats(), 4, 1);
+
+        float[] movingVectorValues =
+        {
+            1, 0, 0, vector.x,
+            0, 1, 0, vector.y,
+            0, 0, 1, vector.z,
+            0, 0, 0, 1
+        };
+
+        Matrix movingMatrix = new Matrix(movingVectorValues, 4, 4);
+        
+        return (movingMatrix * positionMatrix).AsCoords();
     }
 
     static public float Distance(Coords point1, Coords point2)

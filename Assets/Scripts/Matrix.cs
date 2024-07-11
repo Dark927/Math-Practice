@@ -104,4 +104,16 @@ public class Matrix
 
         return result;
     }
+
+    public Coords AsCoords()
+    {
+        if(_cols == 1 && _rows == 4)
+        {
+            return new Coords(_values[0], _values[1], _values[2], _values[3]);
+        }
+        else
+        {
+            return null;
+        }
+    }
 }
