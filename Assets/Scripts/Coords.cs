@@ -2,12 +2,34 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Coords
-{
+public class Coords {
 
     public float x;
     public float y;
     public float z;
+    public float w;
+
+    public Coords(float _X, float _Y, float _Z, float _W)
+    {
+        x = _X;
+        y = _Y;
+        z = _Z;
+        w = _W;
+    }
+
+    public Coords(Vector3 vecpos, float _W)
+    {
+        x = vecpos.x;
+        y = vecpos.y;
+        z = vecpos.z;
+        w = _W;
+    }
+
+    public float[] AsFloats()
+    {
+        float[] values = { x, y, z, w };
+        return values;
+    }
 
     public Coords(float _X, float _Y)
     {
@@ -30,9 +52,16 @@ public class Coords
         z = vecpos.z;
     }
 
+
+    public Coords GetNormal()
+    {
+        float magnitude = HolisticMath.Distance(new Coords(0, 0, 0), new Coords(x, y, z));
+        return new Coords(x / magnitude, y / magnitude, z / magnitude);
+    }
+
     public override string ToString()
     {
-        return "(" + x + "," + y + "," + z + ")";
+        return"(" + x + "," + y + "," + z +")";
     }
 
     public Vector3 ToVector()
@@ -40,35 +69,33 @@ public class Coords
         return new Vector3(x, y, z);
     }
 
-    public Coords Normal()
+    static public Coords operator+ (Coords a, Coords b)
     {
-        float magnitude = HolisticMath.Distance(new Coords(0, 0, 0), new Coords(x, y, z));
-        return new Coords(x / magnitude, y / magnitude, z / magnitude);
+        Coords c = new Coords(a.x + b.x, a.y + b.y, a.z + b.z);
+        return c;
     }
 
-    static public Coords operator +(Coords a, Coords b)
+    static public Coords operator- (Coords a, Coords b)
     {
-        return new Coords(a.x + b.x, a.y + b.y, a.z + b.z);
-    }
-
-    static public Coords operator -(Coords a, Coords b)
-    {
-        return new Coords(a.x - b.x, a.y - b.y, a.z - b.z);
+        Coords c = new Coords(a.x - b.x, a.y - b.y, a.z - b.z);
+        return c;
     }
 
     static public Coords operator *(Coords a, float b)
     {
-        return new Coords(a.x * b, a.y * b, a.z * b);
-    }
-
-    static public Coords operator *(float b, Coords a)
-    {
-        return new Coords(a.x * b, a.y * b, a.z * b);
+        Coords c = new Coords(a.x * b, a.y * b, a.z * b);
+        return c;
     }
 
     static public Coords operator /(Coords a, float b)
     {
-        return new Coords(a.x / b, a.y / b, a.z / b);
+        Coords c = new Coords(a.x / b, a.y / b, a.z / b);
+        return c;
+    }
+
+    static public Coords Perp(Coords v)
+    {
+        return new Coords(-v.y, v.x, 0);
     }
 
     static public void DrawLine(Coords startPoint, Coords endPoint, float width, Color colour)
@@ -82,12 +109,6 @@ public class Coords
         lineRenderer.SetPosition(1, new Vector3(endPoint.x, endPoint.y, endPoint.z));
         lineRenderer.startWidth = width;
         lineRenderer.endWidth = width;
-    }
-
-
-    static public Coords Perp(Coords v)
-    {
-        return new Coords(-v.y, v.x, 0);
     }
 
     static public void DrawPoint(Coords position, float width, Color colour)

@@ -4,15 +4,11 @@ using UnityEngine;
 
 public class Line
 {
-    public Coords A, B, v;
+    public Coords A;
+    Coords B;
+    public Coords v;
 
-    public enum LINETYPE
-    {
-        LINE,
-        SEGMENT,
-        RAY
-    }
-
+    public enum LINETYPE { LINE, SEGMENT, RAY};
     LINETYPE type;
 
     public Line(Coords _A, Coords _B, LINETYPE _type)
@@ -31,48 +27,45 @@ public class Line
         type = LINETYPE.SEGMENT;
     }
 
-
     public Coords Reflect(Coords normal)
     {
-        Coords normalV = v.Normal();
-        Coords norm = normal.Normal();
 
-        if (HolisticMath.Dot(normal, v) == 0) return v;
+        Coords norm = normal.GetNormal();
+        Coords vnorm = v.GetNormal();
 
-        return normalV - (2 * (HolisticMath.Dot(normalV, norm)) * norm);
+        float d = HolisticMath.Dot(norm, vnorm);
+
+        if (d == 0) return v;
+
+        float vn2 = d * 2;
+        Coords r = vnorm - norm * vn2;
+        return r;
     }
 
+    public float IntersectsAt(Plane p)
+    {
+        Coords normal = HolisticMath.Cross(p.u, p.v);
+        if (HolisticMath.Dot(normal, v) == 0)
+            return float.NaN;
+        float t = HolisticMath.Dot(normal, p.A - A) / HolisticMath.Dot(normal, v);
+        return t;
+    }
+    
     public float IntersectsAt(Line l)
     {
-        if(HolisticMath.Dot(Coords.Perp(l.v), v) == 0)
+        if(HolisticMath.Dot(Coords.Perp(l.v),v) == 0)
         {
             return float.NaN;
         }
-
         Coords c = l.A - this.A;
         float t = HolisticMath.Dot(Coords.Perp(l.v), c) / HolisticMath.Dot(Coords.Perp(l.v), v);
-
-        if(t < 0 || t > 1 && type == LINETYPE.SEGMENT)
+        if((t < 0 || t > 1) && type == LINETYPE.SEGMENT)
         {
             return float.NaN;
         }
-
         return t;
     }
 
-    public float IntersectsAt(Plane plane)
-    {
-        Vector3 normal = HolisticMath.Cross(plane.V, plane.U).ToVector().normalized;
-
-        if (HolisticMath.Dot(normal, v) == 0)
-        {
-            return float.NaN;
-        }
-
-        float t = (HolisticMath.Dot(-normal, A - plane.A)) / (HolisticMath.Dot(normal, v));
-
-        return t;
-    }
 
     public void Draw(float width, Color col)
     {
@@ -92,4 +85,9 @@ public class Line
 
         return new Coords(xt, yt, zt);
     }
+
+    //3D Line Intersection Algorithm
+    //http://inis.jinr.ru/sl/vol1/CMC/Graphics_Gems_1,ed_A.Glassner.pdf
+
+
 }
