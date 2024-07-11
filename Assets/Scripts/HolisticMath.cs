@@ -107,6 +107,22 @@ public class HolisticMath
         return (scaleMatrix * positionMatrix).AsCoords();
     }
 
+    static public Coords Shear(Coords position, float shearX, float shearY, float shearZ)
+    {
+        float[] shearMatrixValues =
+            {
+            1, shearY, shearZ, 0,
+            shearX, 1, shearZ, 0,
+            shearX, shearY, 1, 0,
+            0, 0, 0, 1
+        };
+
+        Matrix shearMatrix = new Matrix(shearMatrixValues, 4, 4);
+        Matrix positionMatrix = new Matrix(position.AsFloats(), 4, 1);
+
+        return (shearMatrix * positionMatrix).AsCoords();
+    }
+
     static public float Distance(Coords point1, Coords point2)
     {
         float diffSquared = Square(point1.x - point2.x) +
