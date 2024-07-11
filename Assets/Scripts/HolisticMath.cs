@@ -28,8 +28,67 @@ public class HolisticMath
         };
 
         Matrix movingMatrix = new Matrix(movingVectorValues, 4, 4);
-        
+
         return (movingMatrix * positionMatrix).AsCoords();
+    }
+
+    static public Coords Rotate(
+        Coords position,
+        float rotationX, bool clockX,
+        float rotationY, bool clockY,
+        float rotationZ, bool clockZ
+        )
+    {
+        // Check if angles must be clockwise and configure them
+
+        rotationX = !clockX ? rotationX : 2 * Mathf.PI - rotationX;
+        rotationY = !clockY ? rotationY : 2 * Mathf.PI - rotationY;
+        rotationZ = !clockZ ? rotationZ : 2 * Mathf.PI - rotationZ;
+
+        Matrix positionMatrix = new Matrix(position.AsFloats(), 4, 1);
+
+
+        // X Roll
+
+        float[] rollValuesX =
+            {
+            1, 0, 0, 0,
+            0, Mathf.Cos(rotationX), -Mathf.Sin(rotationX), 0,
+            0, Mathf.Sin(rotationX), Mathf.Cos(rotationX), 0,
+            0, 0, 0, 1
+        };
+
+        Matrix rollMatrixX = new Matrix(rollValuesX, 4, 4);        
+        
+
+        // Y Roll
+        
+        float[] rollValuesY =
+            {
+            Mathf.Cos(rotationY), 0, Mathf.Sin(rotationY), 0,
+            0, 1, 0, 0,
+            -Mathf.Sin(rotationY), 0, Mathf.Cos(rotationY), 0,
+            0, 0, 0, 1
+        };
+
+        Matrix rollMatrixY = new Matrix(rollValuesY, 4, 4);        
+        
+        
+        // Z Roll
+        
+        float[] rollValuesZ =
+            {
+            Mathf.Cos(rotationZ), -Mathf.Sin(rotationZ), 0, 0,
+            Mathf.Sin(rotationZ), Mathf.Cos(rotationZ), 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1
+        };
+
+        Matrix rollMatrixZ = new Matrix(rollValuesZ, 4, 4);
+
+        // Result
+
+        return (rollMatrixX * rollMatrixY * rollMatrixZ * positionMatrix).AsCoords();
     }
 
     static public Coords Scale(Coords position, float scaleX, float scaleY, float scaleZ)
@@ -50,8 +109,8 @@ public class HolisticMath
 
     static public float Distance(Coords point1, Coords point2)
     {
-        float diffSquared = Square(point1.x - point2.x) + 
-                            Square(point1.y - point2.y) + 
+        float diffSquared = Square(point1.x - point2.x) +
+                            Square(point1.y - point2.y) +
                             Square(point1.z - point2.z);
         float squareRoot = Mathf.Sqrt(diffSquared);
         return squareRoot;
@@ -100,7 +159,7 @@ public class HolisticMath
 
     static public Coords Rotate(Coords vector, float angle, bool clockwise) //in radians
     {
-        if(clockwise)
+        if (clockwise)
         {
             angle = 2 * Mathf.PI - angle;
         }
@@ -109,7 +168,7 @@ public class HolisticMath
         float yVal = vector.x * Mathf.Sin(angle) + vector.y * Mathf.Cos(angle);
         return new Coords(xVal, yVal, 0);
     }
-   
+
     static public Coords Translate(Coords position, Coords facing, Coords vector)
     {
         if (HolisticMath.Distance(new Coords(0, 0, 0), vector) <= 0) return position;
